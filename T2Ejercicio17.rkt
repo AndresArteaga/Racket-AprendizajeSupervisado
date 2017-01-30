@@ -1,0 +1,61 @@
+#|Andrés Sebastián Arteaga Cabezas
+Ejercicio 17 Tema 2: Inducción de Conjunciones Lógicas|#
+
+(#%require racket)
+(include "T2Ejercicio1.rkt")
+
+(define (score-CL conCL PSET NSET)
+  (let((pc (let*((count 0))
+             (map (lambda (x)
+                    (if(equal? x #t)
+                       (set! count (+ 1 count))
+                       'null))
+                  (map (lambda (x) (match-CL conCL x))
+                       (map(lambda(x)(reverse(cdr(reverse x))))(cdr PSET))))
+             count))
+       (nc (let*((count 0))
+             (map (lambda (x)
+                    (if(equal? x #f)
+                       (set! count (+ 1 count))
+                       'null))
+                  (map (lambda (x) (match-CL conCL x))
+                       (map(lambda(x)(reverse(cdr(reverse x))))(cdr NSET))))
+             count)))
+    (/ (+ pc nc) (+ (- (length PSET) 1) (- (length NSET) 1)))))
+
+;;Ejecución
+;;=============================================================
+;;Nota para ejecutar retirar #|codigo.........|#
+;;esta es otra forma de poner comentarios
+
+#|(score-CL '((soleado)(*)(-inf.0 40)(si))
+          '(((clima (soleado nublado lluvioso))
+             (temperatura 'numerico)
+             (humedad 'numerico)
+             (viento (si no))
+             (clase (+ -)))
+            (soleado 12 20 no +)
+            (soleado 15 20 si +)
+            (soleado 10 25 no +)
+            (soleado 10 60 si +)
+            (soleado 16 20 no +)
+            (soleado 17 20 si +)
+            (soleado 10 19 si +)
+            (soleado 5 27 si +)
+            (soleado 10 20 no +)
+            (soleado 1 21 si +))
+          '(((clima (soleado nublado lluvioso))
+             (temperatura 'numerico)
+             (humedad 'numerico)
+             (viento (si no))
+             (clase (+ -)))
+            (soleado 12 20 no -)
+            (nublado 15 20 si -)
+            (soleado 10 25 no -)
+            (lluvioso 10 60 si -)
+            (soleado 16 20 no -)
+            (lluvioso 17 20 si -)
+            (soleado 10 19 si -)
+            (soleado 5 27 si -)
+            (soleado 10 20 no -)
+            (soleado 1 21 si -)))|#

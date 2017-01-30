@@ -1,0 +1,92 @@
+#|Andrés Sebastián Arteaga Cabezas
+Ejercicio 15 Tema 2: Inducción de Conjunciones Lógicas|#
+
+(#%require racket)
+(include "Ejercicio6.rkt")
+(include "T2Ejercicio1.rkt")
+(include "T2Ejercicio4.rkt")
+(include "T2Ejercicio8.rkt")
+(include "T2Ejercicio14.rkt")
+(include "take.rkt")
+
+(define (matchPSET x PSET)
+  (true? (map (lambda (c)(match-CL x c))
+              (map (lambda (v) (reverse(cdr(reverse v))))
+                   (cdr PSET)))))
+
+(define (matchNSET x NSET)
+  (define (algun? lista)
+    (if(= 1 (length lista)) (car lista)
+       (if(car lista) #t (algun? (cdr lista)))))
+  (algun? (map (lambda (c) (match-CL x c))
+               (map (lambda (v) (reverse(cdr(reverse v))))
+                   (cdr NSET)))))
+
+(define (cuantosmatch x NSET)
+  (length(filter false? (map (lambda (c) (not (match-CL (list x) c)))
+                             (map (lambda (v) (reverse(cdr(reverse v))))
+                                  (cdr NSET))))))
+
+(define (s-match<=x x NSET)
+  (let*((meta (car NSET))
+        (cuantosx (cuantosmatch x NSET))
+        (S '()))
+    (set! S
+          (remove-duplicates
+           (append-map (lambda (h)
+                  (map (lambda (c)
+                         (when (<= (cuantosmatch c NSET) cuantosx)
+                           c))
+                       (especializaciones-CL x meta h)))
+                (cdr NSET))))
+    S))
+
+(define (nmg? CSET c)
+  (if(empty? CSET) #t
+     (true? (map (lambda (x) (<= 0 (cmp-concepto-CL x c))) CSET))))
+
+(define (EGSO PSET NSET CSET HSET)
+  (let*((meta (car PSET))
+        (PSET (cons meta (tomar 100 (shuffle (cdr PSET)))))
+        (NSET (cons meta (tomar 100 (shuffle (cdr NSET)))))
+        (CSET CSET)
+        (HSET HSET))
+    (for-each (lambda (x) (and (unless (matchPSET x PSET)
+                                 (set! HSET (remove x HSET)))
+                               (unless (matchNSET x NSET)
+                                 (and (set! HSET (remove x HSET))
+                                      (set! CSET (append CSET (list x)))))))
+              HSET)
+    (if(empty? HSET) CSET
+       (let((new '()))
+         (for-each (lambda (x)
+                     (map (lambda (c)
+                            (when (nmg? CSET c)
+                              (set! new (append new (list c)))))
+                          (s-match<=x x NSET)))
+                   HSET)
+         (EGSO PSET NSET CSET new)))))
+
+(define (EGS ejemplos)
+  (let*((meta (car ejemplos))
+        (ejPositivo (remove* '(null)
+                             (map (lambda (x)
+                                    (if(equal? '+ (car(reverse x)))
+                                       x 'null))
+                                  (cdr ejemplos))))
+        (ejNegativo (remove* '(null)
+                             (map (lambda (x)
+                                    (if(equal? '- (car(reverse x)))
+                                       x 'null))
+                                  (cdr ejemplos))))
+        (apli (EGSO (cons meta ejPositivo)
+                    (cons meta ejNegativo)
+                    '()
+                    (list(concepto-CL-mas-general meta)))))
+    (obtener-al-azar apli)))
+
+;;Ejecución
+;;===================================================================
+;(include "Ejercicio8.rkt")
+;(define ejemplos (leer-ejemplos "ejemplos.scm"))
+;(EGS ejemplos)
