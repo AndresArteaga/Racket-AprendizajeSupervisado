@@ -8,4 +8,4 @@ El lenguaje en el que se desarrolla el presente proyecto es Racket, R5RS, una di
 mismo que puede ser descargado desde el siguiente url: https://download.racket-lang.org/
 
 Estructura del proyecto
-===========================================================================================================================
+=========================================================================================
